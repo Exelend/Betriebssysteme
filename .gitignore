@@ -19,6 +19,8 @@
 !**/*.h
 !**/*.tex
 !**/*.pdf
+!**/*.vpp
+!**/*.png
 
 # Reallow files from subdirectories
 #==================================
