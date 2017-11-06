@@ -96,7 +96,7 @@
 \section{Aufgabenstellung:}
 Zu erstellen ist ein Programm, mit folgenden Anforderungen:\\
 - Einen Mainthread hat, welcher die anderen Threads startet und wartet, bis alle anderen Threads fertig sind.\\
-- Einen Producer\_ 1 Thread, der a, b,..., y, z ; in einen Puffer schreibt und ausgibt, was er getan hat. Er blockiert wenn der Puffer voll ist und schreibt weiter, wenn wieder Platz ist.\\
+- Einen Producer\_ 1 Thread, der a, b,..., y, z ; in einen Puffer schreibt und ausgibt, was er getan hat. Er blockiert, wenn der Puffer voll ist und schreibt weiter, wenn wieder Platz ist.\\
 - Einen Producer\_ 2 Thread, wie Producer\_ 1, aber Großbuchstaben.\\
 - Einen Consumer Thread, welcher alle 2 Sekunden ein Zeichen aus dem Puffer nimmt und dieses ausgibt. Wenn der Puffer leer ist blockiert der Thread, bis wieder Zeichen im Puuer sind.\\
 - Einen Control Thread, dieser soll mit Tastatureingaben, dass System steuern.
