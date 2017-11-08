@@ -14,7 +14,7 @@ pthread_cond_t cv_producer;
 pthread_cond_t cv_consumer;
 struct Queue* queue = NULL;
 
-int queue_sema_init(){
+int queue_condi_init(){
     cv_producer = PTHREAD_COND_INITIALIZER;
     cv_consumer = PTHREAD_COND_INITIALIZER;
     queue = queueInit();

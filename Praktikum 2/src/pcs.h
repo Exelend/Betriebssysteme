@@ -12,8 +12,12 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <unistd.h>
 
 #define BUFFERSIZE 10
+#define ANZAHL_THREADS 4
+#define SECONDS_TO_WAIT_3 3
+#define SECONDS_TO_WAIT_2 2
 
 pthread_mutex_t mutex;
 
