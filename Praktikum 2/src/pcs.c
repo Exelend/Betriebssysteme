@@ -18,7 +18,7 @@
 
 
 
-static bool debug = true;
+static bool debug = false;
 static bool prod1Kill = false;
 static bool prod2Kill = false;
 static bool consumerKill = false;
@@ -84,6 +84,7 @@ void* producer2(void* unused){
 }
 
 void* consumer(void* unused){
+    retConsumer = EXIT_SUCCESS;
     while(!consumerKill){
         char tempChar = '\0';
         tempChar = queueGetLoad();
@@ -91,14 +92,17 @@ void* consumer(void* unused){
             printf("Consumerfehler: NULL-Pointer\n");
             retConsumer = EXIT_FAILURE;
             pthread_exit(&retConsumer);
+        } else if (tempChar == '\n'){
+        // TODO \n erstellen in den Queue's
+            pthread_exit(&retConsumer);
         }
         printf("Ausgabe : %c\n", tempChar);
         sleep(SECONDS_TO_WAIT_2);
-        pthread_mutex_lock(&prod2Mutex);
-        pthread_mutex_unlock(&prod2Mutex);
+        pthread_mutex_lock(&consumMutex);
+        pthread_mutex_unlock(&consumMutex);
     }
 
-    retConsumer = EXIT_FAILURE;
+
     pthread_exit(&retConsumer);
 }
 
@@ -109,7 +113,7 @@ void* control(void* unused){
 
     while(!controlKill){
         char c;
-        printf("Eingabe: ");
+        printf("Eingabe: \n");
         c = getchar();
         switch (c){
             case '1':
@@ -139,24 +143,31 @@ void* control(void* unused){
                 if(!consum_blocked){
                     pthread_mutex_lock(&consumMutex);
                     consum_blocked = true;
+                    printf("Consumer angehalten.\n");
                 } else {
                     pthread_mutex_unlock(&consumMutex);
                     consum_blocked = false;
+                    printf("Consumer gestartet.\n");
                 }
                 break;
             case 'q':
             case 'Q':
                 prod1Kill = true;
+                pthread_mutex_unlock(&prod1Mutex);
                 prod2Kill = true;
+                pthread_mutex_unlock(&prod2Mutex);
                 consumerKill = true;
+                pthread_mutex_unlock(&consumMutex);
                 controlKill = true;
                 break;
             case 'h':
-                printf("//TODO HILFETEXT 2!!!");
+                printf("//TODO HILFETEXT 2!!!\n");
                 break;
+            case '\n':
+                printf("test\n");
         }
     }
-    retControl = EXIT_FAILURE;
+    retControl = EXIT_SUCCESS;
     pthread_exit(&retControl);
 }
 
@@ -184,12 +195,12 @@ int main(int argc, char* argv[]){
 
     pthread_t threadArray[ANZAHL_THREADS];
 
-    if(argc < 2 && !debug){
+    if(argc < 2){
         helpText();
         return EXIT_FAILURE;
     }
 
-    switch ('s'){//argv[1][0]){
+    switch (argv[1][1]){
         case 's':
         case 'S':
             pointerInitSema();
@@ -231,7 +242,7 @@ int main(int argc, char* argv[]){
     }
     tempReturn = pthread_create( &(threadArray[3]), NULL, &consumer, NULL);
     if(tempReturn != 0){
-        printf("Producer1 konnte nicht gestartet werden!\n");
+        printf("Consumer konnte nicht gestartet werden!\n");
         return EXIT_FAILURE;
     }
 

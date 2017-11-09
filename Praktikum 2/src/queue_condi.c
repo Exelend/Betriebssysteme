@@ -57,7 +57,7 @@ int setLoad_condi(char load){
         queue->head = node;
         queue->tail = node;
     } else {
-        node->next = queue->tail;
+        (queue->tail)->next = node;
         queue->tail = node;
     }
     queue->size++;
