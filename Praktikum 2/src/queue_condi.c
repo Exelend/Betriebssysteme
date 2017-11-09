@@ -59,6 +59,8 @@ char getLoad_condi(){
     queue->size--;
     cond_signal(&cv_producer);
     pthread_mutex_unlock(&mutex);
-    
-    return node->load;
+    char temp = node->load;
+    free(node);
+    node = NULL;
+    return temp;
 }    

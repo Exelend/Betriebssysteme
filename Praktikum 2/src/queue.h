@@ -17,7 +17,7 @@ typedef struct Queue {
     NODE * head;
     NODE * tail;
     int size;
-}
+} QUEUE;
 
 
 int queueInit(void);

@@ -13,7 +13,6 @@
 struct Queue* queue = NULL;
 sem_t semaphorFull;
 sem_t semaphorEmpty;
-int PRIVATE = 0;
 
 int queue_sema_init(){
     int returnValue = sem_init(semaphorEmpty, PRIVATE, BUFFERSIZE);
@@ -46,7 +45,7 @@ int setLoad_sema(char load){
     return EXIT_SUCCESS;
 }  
 
-struct NODE* getLoad_sema(){
+char getLoad_sema(){
     sem_wait(semaphorFull);
     pthread_mutex_lock(&mutex);
     
@@ -55,7 +54,10 @@ struct NODE* getLoad_sema(){
     
     pthread_mutex_unlock(&mutex);
     sem_post(semaphorEmpty);
-    return EXIT_SUCCESS;
+    char temp = node->load;
+    free(node);
+    node = NULL;
+    return temp;
 }    
 
 destroy_sema_queue(){

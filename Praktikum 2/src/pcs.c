@@ -9,24 +9,36 @@
 #include "pcs.h"
 #include <stdbool.h>
 
-boolean debug = false;
-boolean prod1Kill = false;
-boolean prod2Kill = false;
-boolean consumerKill = false;
-boolean controlKill = false;
+bool debug = false;
+bool prod1Kill = false;
+bool prod2Kill = false;
+bool consumerKill = false;
+bool controlKill = false;
 pthread_t threadArray[ANZAHL_THREADS]; 
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITALIZER;
-pthread_mutex_t prod1Mutex = PTHREAD_MUTEX_INITALIZER;
-pthread_mutex_t prod2Mutex = PTHREAD_MUTEX_INITALIZER;
-pthread_mutex_t consumMutex = PTHREAD_MUTEX_INITALIZER;
+pthread_mutex_t mutex;
+pthread_mutex_t prod1Mutex;
+pthread_mutex_t prod2Mutex;
+pthread_mutex_t consumMutex;
 
 int (*queue_init) ();
-(*queueDestroy) ();
+void (*queueDestroy1) ();
 int (*queueSetLoad)(char);
 char (*queueGetLoad)();
 
-producer1(){
+void initProg(void){
+    pthread_mutex_init ( &mutex, NULL);
+    //mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_init ( &prod1Mutex, NULL);
+    //prod1Mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_init ( &prod2Mutex, NULL);
+    //prod2Mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_init ( &consumMutex, NULL);
+    //consumMutex = PTHREAD_MUTEX_INITIALIZER;
+    return;
+}
+
+void producer1(){
     int zaehler = atoi('a');
     while(!prod1Kill){
         queueSetLoad(zaehler + '\0');
@@ -38,10 +50,10 @@ producer1(){
         pthread_mutex_lock(&prod1Mutex);
         pthread_mutex_unlock(&prod1Mutex);
     }    
-    return NULL;
+    return;
 }    
 
-producer2(){
+void producer2(){
     int zaehler = atoi('A');
     while(!prod2Kill){
         queueSetLoad(zaehler + '\0');
@@ -53,15 +65,16 @@ producer2(){
         pthread_mutex_lock(&prod2Mutex);
         pthread_mutex_unlock(&prod2Mutex);
     }
-    return NULL;
+    return;
 } 
 
-consumer(){
+void consumer(){
     while(!consumerKill){
-        char *tempChar = queueGetLoad();
-        if(tempChar == NULL){
+        char tempChar = '\0';
+        tempChar = queueGetLoad();
+        if(tempChar == '\0'){
             printf("Consumerfehler: NULL-Pointer");
-            return NULL;
+            return;
         }    
         printf("Ausgabe : %c", tempChar);
         sleep(SECONDS_TO_WAIT_2);
@@ -69,13 +82,13 @@ consumer(){
         pthread_mutex_unlock(&prod2Mutex);
     }  
     
-    return NULL;
+    return;
 }    
 
-control(){
-    boolean prod1_blocked = false;
-    boolean prod2_blocked = false;
-    boolean consum_blocked = false;
+void control(){
+    bool prod1_blocked = false;
+    bool prod2_blocked = false;
+    bool consum_blocked = false;
     
     while(!controlKill){
         char c;
@@ -126,17 +139,17 @@ control(){
                 break;
         }
     }
-    return NULL;
+    return;
 }    
 
-helpText(){
+void helpText(){
     printf("psc.c ist ein Programm das ein Erzeuger-Verbraucher-System simuliert.\npsc [option]\n  otionen:\n    -s|-S -> Semaphore\n    -c|-C -> Conditional Variable\n");
-    
+    return;
 }    
 
 int pointerInitSema(){
     queue_init = queue_sema_init;
-    queueDestroy = destroy_sema_queue;
+    queueDestroy1 = destroy_sema_queue;
     queueSetLoad = setLoad_sema;
     queueGetLoad = getLoad_sema;
     
@@ -144,7 +157,7 @@ int pointerInitSema(){
 
 int pointerInitCondi(){
     queue_init = queue_condi_init;
-    queueDestroy = destroy_condi_queue;
+    queueDestroy1 = destroy_condi_queue;
     queueSetLoad = setLoad_condi;
     queueGetLoad = getLoad_condi;
 }    
@@ -166,7 +179,10 @@ int main(int argc, char* argv[]){
             return EXIT_FAILURE;
     }    
     
+    initProg();
     queue_init();
+    
+    
     int tempReturn = pthread_create( &(threadArray[0]), NULL, control, NULL);
     if(tempReturn != 0){
         printf("Control konnte nicht gestartet werden!\n");
@@ -192,6 +208,8 @@ int main(int argc, char* argv[]){
         pthread_join( threadArray[i], NULL);
     }    
 
+    // ALLes zerstören., freigeben.
+    
     return EXIT_SUCCESS;
 }    
 

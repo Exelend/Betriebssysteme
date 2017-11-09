@@ -13,6 +13,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
+#include "queue_sema.h"
+#include "queue_condi.h"
+#include "queue.h"
 
 #define BUFFERSIZE 10
 #define ANZAHL_THREADS 4
