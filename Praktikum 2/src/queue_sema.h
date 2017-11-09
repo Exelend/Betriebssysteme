@@ -5,8 +5,8 @@
  *  Martin Witte 2285586
  */
 
-#ifndef QUEUE_CONDI_H_
-#define QUEUE_CONDI_H_
+#ifndef QUEUE_SEMA_H_
+#define QUEUE_SEMA_H_
 
 #define PRIVATE  0
 
@@ -17,4 +17,4 @@ void destroy_sema_queue(void);
 char getLoad_sema(void);
 
 
-#endif //QUEUE_CONDI_H_
+#endif //QUEUE_SEMA_H_

@@ -20,8 +20,8 @@ typedef struct Queue {
 } QUEUE;
 
 
-int queueInit(void);
+QUEUE* queueInit(void);
 
-int queueDestroy(struct Queue * queue);
+void queueDestroy(QUEUE * queue);
 
 #endif //QUEUE_H_

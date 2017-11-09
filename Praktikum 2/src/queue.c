@@ -5,32 +5,40 @@
  *  Martin Witte 2285586
  */
 
-#include "pcs.h"
+#include <stdio.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include "queue_sema.h"
+#include "queue_condi.h"
 #include "queue.h"
+#include "pcs.h"
 
 
-stuct Queue* queueInit(){
-    Queue * queue = (Queue *) malloc(sizeof(Queue));
+QUEUE* queueInit(){
+    QUEUE* queue = (QUEUE *) malloc(sizeof(QUEUE));
     if(queue == NULL){
-        return EXIT_FAILURE;
-    }    
+        return NULL;
+    }
     queue->size = 0;
     queue->head = NULL;
     queue->tail = NULL;
     return queue;
 }
 
-queueDestroy(struct Queue * queue){
-    if(queue->tail != NULL){
-        nodeFree(queue->head);
-    }    
-    free(queue);
-}
-
-nodeFree(Node * node){
+void nodeFree(NODE* node){
     if(node->next != NULL){
         nodeFree(node->next);
     }
     free(node);
-}    
+}
+
+void queueDestroy(QUEUE* queue){
+    if(queue->tail != NULL){
+        nodeFree(queue->head);
+    }
+    free(queue);
+}
 
