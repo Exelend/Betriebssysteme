@@ -16,6 +16,7 @@
 #define SECONDS_TO_WAIT_2 2
 
 extern pthread_mutex_t mutex;
+extern bool consumerKill;
 
 
 #endif // PCH_H_

@@ -67,16 +67,21 @@ int setLoad_condi(char load){
 }
 
 char getLoad_condi(){
+    char temp = '\0';
     pthread_mutex_lock(&mutex);
     while(queue->size <= 0){
         pthread_cond_wait(&cv_consumer, &mutex);
+        if(consumerKill){
+
+            return '\n';
+        }    
     }
     NODE* node = queue->head;
     queue->head = node->next;
     queue->size--;
     pthread_cond_signal(&cv_producer);
     pthread_mutex_unlock(&mutex);
-    char temp = node->load;
+    temp = node->load;
     free(node);
     node = NULL;
     return temp;

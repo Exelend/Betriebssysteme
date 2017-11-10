@@ -21,7 +21,7 @@
 static bool debug = false;
 static bool prod1Kill = false;
 static bool prod2Kill = false;
-static bool consumerKill = false;
+bool consumerKill = false;
 static bool controlKill = false;
 
 pthread_mutex_t mutex;
@@ -35,6 +35,15 @@ static int (*queueSetLoad)(char);
 static char (*queueGetLoad)();
 static int retProducer1, retProducer2, retConsumer, retControl;
 
+
+void helpText(){
+    printf("psc ist ein Programm, welches ein Erzeuger-Verbraucher-System simuliert.\npsc [option]\n  otionen:\n    -s|-S -> Semaphore\n    -c|-C -> Conditional Variable\n");
+    return;
+}
+
+void helpText2(){
+    printf("Eingabe:\n1 -> Toggelt den Producer1\n2 -> Toggelt den Producer2\nc | C -> Toggelt den Consumer\nq | Q -> Beendet das Programm\nh -> zeigt alle Eingaben an");
+}  
 
 void* producer1(void* unused){
     if(debug){
@@ -93,7 +102,6 @@ void* consumer(void* unused){
             retConsumer = EXIT_FAILURE;
             pthread_exit(&retConsumer);
         } else if (tempChar == '\n'){
-        // TODO \n erstellen in den Queue's
             pthread_exit(&retConsumer);
         }
         printf("Ausgabe : %c\n", tempChar);
@@ -111,9 +119,9 @@ void* control(void* unused){
     bool prod2_blocked = false;
     bool consum_blocked = false;
 
+    printf("Eingabe: \n");
     while(!controlKill){
         char c;
-        printf("Eingabe: \n");
         c = getchar();
         switch (c){
             case '1':
@@ -158,23 +166,22 @@ void* control(void* unused){
                 pthread_mutex_unlock(&prod2Mutex);
                 consumerKill = true;
                 pthread_mutex_unlock(&consumMutex);
+                queueSetLoad('\n');
                 controlKill = true;
                 break;
             case 'h':
-                printf("//TODO HILFETEXT 2!!!\n");
+                helpText2();
                 break;
-            case '\n':
-                printf("test\n");
         }
+        if(c != '\n'){
+            printf("Eingabe: \n");
+        }    
     }
     retControl = EXIT_SUCCESS;
     pthread_exit(&retControl);
 }
 
-void helpText(){
-    printf("psc ist ein Programm, welches ein Erzeuger-Verbraucher-System simuliert.\npsc [option]\n  otionen:\n    -s|-S -> Semaphore\n    -c|-C -> Conditional Variable\n");
-    return;
-}
+  
 
 void pointerInitSema(){
     queue_init = &queue_sema_init;
@@ -250,8 +257,19 @@ int main(int argc, char* argv[]){
         pthread_join( threadArray[i], NULL);
     }
 
-    // ALLes zerstören., freigeben.
-
+    
+    // Alles zerstören., freigeben.
+    
+    pthread_mutex_unlock(&mutex);
+    queueDestroy1();
+    pthread_mutex_destroy(&mutex);
+    pthread_mutex_unlock(&prod1Mutex);
+    pthread_mutex_destroy(&prod1Mutex);
+    pthread_mutex_unlock(&prod2Mutex);
+    pthread_mutex_destroy(&prod2Mutex);
+    pthread_mutex_unlock(&consumMutex);
+    pthread_mutex_destroy(&consumMutex);
+    
     return EXIT_SUCCESS;
 }
 

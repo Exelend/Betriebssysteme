@@ -59,6 +59,10 @@ char getLoad_sema(){
     sem_wait(&semaphorFull);
     pthread_mutex_lock(&mutex);
 
+    if(consumerKill){
+        return '\n';
+    }
+    
     NODE* node = queue->head;
     queue->head = node->next;
 
