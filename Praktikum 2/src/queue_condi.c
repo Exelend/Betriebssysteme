@@ -24,7 +24,7 @@ static struct Queue* queue = NULL;
 
 
 /*
- * Initialisier eine Queue mit dazu gehoerigen conditional Variables.
+ * Initialisiert eine Queue mit dazu gehoerigen conditional Variables.
  */
 int queue_condi_init(){
     int ret = pthread_cond_init(&cv_producer, NULL);
@@ -54,24 +54,24 @@ void destroy_condi_queue(){
 }
 
 /*
- * Erstellt fur den uebergebenen Char ein Node und fuegt diesen in die Queue ein.
+ * Erstellt fuer den uebergebenen Char einen Node und fuegt diesen in die Queue ein.
  */
 int setLoad_condi(char load){
-    //Node wird erstellt und gefuellt
+    //Node wird erstellt und befuellt;
     NODE* node = (NODE*) malloc(sizeof(NODE));
     node->load = load;
     node->next = NULL;
     //Kritischer Abschnitt Anfang
     pthread_mutex_lock(&mutex);
-    //Ueberpruefung ob noch Platz in der Queue ist, wenn nich blockiert der Thread
+    //Ueberpruefung ob noch Platz in der Queue ist, wenn nicht blockiert der Thread.
     while(queue->size >= BUFFERSIZE){
         pthread_cond_wait(&cv_producer, &mutex);
     }
-
+    // wenn noch kein NODE  in der Queue ist, ....
     if(queue->head == NULL){
         queue->head = node;
         queue->tail = node;
-    } else {
+    } else { // wenn Nodes > 0 in der Queue, .... 
         (queue->tail)->next = node;
         queue->tail = node;
     }
@@ -84,11 +84,14 @@ int setLoad_condi(char load){
     return EXIT_SUCCESS;
 }
 
+/*
+ * Holt einen Node aus dem Queue und gibt den Inhalt (char) zurück. Der Node wird zerstört.
+ */ 
 char getLoad_condi(){
     char temp = '\0';
     //Kritischer Abschnitt Anfang
     pthread_mutex_lock(&mutex);
-    //Ueberpruefung ob ueberhaupt ein Element in der Queue
+    //Ueberpruefung ob Elemente in der Queue sind
     while(queue->size <= 0){
         pthread_cond_wait(&cv_consumer, &mutex);
         //Ueberpruefung ob der Thread sterben soll

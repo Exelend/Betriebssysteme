@@ -23,7 +23,7 @@ static sem_t semaphorFull;
 static sem_t semaphorEmpty;
 
 /*
- * Initialisier eine Queue mit dazu gehoerigen Semaphoren.
+ * Initialisiert eine Queue mit dazu gehoerigen Semaphoren.
  */
 int queue_sema_init(){
     int returnValue = sem_init(&semaphorEmpty, PRIVATE, BUFFERSIZE);
@@ -39,7 +39,7 @@ int queue_sema_init(){
 }
 
 /*
- * Erstellt fur den uebergebenen Char ein Node und fuegt diesen in die Queue ein.
+ * Erstellt fuer den uebergebenen Char einen Node und fuegt diesen in die Queue ein.
  */
 int setLoad_sema(char load){
     //Thread blockiert, wenn die Queue leer ist
@@ -50,11 +50,11 @@ int setLoad_sema(char load){
     node->next = NULL;
     //Kritischer Abschnitt Anfang
     pthread_mutex_lock(&mutex);
-
+    // wenn kein NODE im Queue ist, ....
     if(queue->head == NULL){
         queue->head = node;
         queue->tail = node;
-    } else {
+    } else { // wenn NODE`s > 0 im Queue, ....
         (queue->tail)->next = node;
         queue->tail = node;
     }
@@ -67,8 +67,8 @@ int setLoad_sema(char load){
 }
 
 /*
- * Erstellt fur den uebergebenen Char ein Node und fuegt diesen in die Queue ein.
- */
+ * Holt einen Node aus dem Queue und gibt den Inhalt (char) zurück. Der Node wird zerstört.
+ */ 
 char getLoad_sema(){
     //Ueberpruefung ob ueberhaupt ein Element in der Queue, wenn nicht blockiert der Thread
     sem_wait(&semaphorFull);

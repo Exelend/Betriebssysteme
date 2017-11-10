@@ -17,7 +17,7 @@
 #include "pcs.h"
 
 /*
- * Erstellt eine Queue und initialisiert alle Elemente.
+ * Erstellt eine Queue und initialisiert alle Queue-Variablen.
  * Gibt einen Pointer auf die Queue zurueck.
  */
 QUEUE* queueInit(){
@@ -32,7 +32,7 @@ QUEUE* queueInit(){
 }
 
 /*
- * Gibt den uebergebenen Node, ein Element der Queue, frei.
+ * Gibt den uebergebenen Node frei.
  */
 void nodeFree(NODE* node){
     if(node->next != NULL){
@@ -42,7 +42,7 @@ void nodeFree(NODE* node){
 }
 
 /*
- * Loescht die übergeben Queue und gibt alle Pointer frei.
+ * Loescht die übergebene Queue und gibt alle Pointer frei.
  */
 void queueDestroy(QUEUE* queue){
     if(queue->tail != NULL){
