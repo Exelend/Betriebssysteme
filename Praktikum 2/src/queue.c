@@ -16,7 +16,10 @@
 #include "queue.h"
 #include "pcs.h"
 
-
+/*
+ * Erstellt eine Queue und initialisiert alle Elemente.
+ * Gibt einen Pointer auf die Queue zurueck.
+ */
 QUEUE* queueInit(){
     QUEUE* queue = (QUEUE *) malloc(sizeof(QUEUE));
     if(queue == NULL){
@@ -28,6 +31,9 @@ QUEUE* queueInit(){
     return queue;
 }
 
+/*
+ * Gibt den uebergebenen Node, ein Element der Queue, frei.
+ */
 void nodeFree(NODE* node){
     if(node->next != NULL){
         nodeFree(node->next);
@@ -35,6 +41,9 @@ void nodeFree(NODE* node){
     free(node);
 }
 
+/*
+ * Loescht die übergeben Queue und gibt alle Pointer frei.
+ */
 void queueDestroy(QUEUE* queue){
     if(queue->tail != NULL){
         nodeFree(queue->head);

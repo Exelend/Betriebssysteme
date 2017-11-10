@@ -22,6 +22,10 @@ static pthread_cond_t cv_producer;
 static pthread_cond_t cv_consumer;
 static struct Queue* queue = NULL;
 
+
+/*
+ * Initialisier eine Queue mit dazu gehoerigen conditional Variables.
+ */
 int queue_condi_init(){
     int ret = pthread_cond_init(&cv_producer, NULL);
     if(ret != 0){
@@ -38,17 +42,28 @@ int queue_condi_init(){
     return EXIT_SUCCESS;
 }
 
+/*
+ * Zerstoert die conditional Variables und die Queue.
+ */
 void destroy_condi_queue(){
     pthread_mutex_unlock(&mutex);
+    pthread_cond_destroy(&cv_consumer);
+    pthread_cond_destroy(&cv_producer);
     queueDestroy(queue);
     queue = NULL;
 }
 
+/*
+ * Erstellt fur den uebergebenen Char ein Node und fuegt diesen in die Queue ein.
+ */
 int setLoad_condi(char load){
+    //Node wird erstellt und gefuellt
     NODE* node = (NODE*) malloc(sizeof(NODE));
     node->load = load;
     node->next = NULL;
+    //Kritischer Abschnitt Anfang
     pthread_mutex_lock(&mutex);
+    //Ueberpruefung ob noch Platz in der Queue ist, wenn nich blockiert der Thread
     while(queue->size >= BUFFERSIZE){
         pthread_cond_wait(&cv_producer, &mutex);
     }
@@ -61,26 +76,34 @@ int setLoad_condi(char load){
         queue->tail = node;
     }
     queue->size++;
+    //Teilt dem Consumer mit, dass ein neues Element vorhanden ist
     pthread_cond_signal(&cv_consumer);
+    //Kritischer Abschnitt Ende
     pthread_mutex_unlock(&mutex);
+
     return EXIT_SUCCESS;
 }
 
 char getLoad_condi(){
     char temp = '\0';
+    //Kritischer Abschnitt Anfang
     pthread_mutex_lock(&mutex);
+    //Ueberpruefung ob ueberhaupt ein Element in der Queue
     while(queue->size <= 0){
         pthread_cond_wait(&cv_consumer, &mutex);
+        //Ueberpruefung ob der Thread sterben soll
         if(consumerKill){
-
             return '\n';
-        }    
+        }
     }
+    //Erstes Element rausnehmen und das naechste Element dem Head zuweisen
     NODE* node = queue->head;
     queue->head = node->next;
     queue->size--;
+    //Den Produzern mitteilen, dass wieder Platz in der Queue ist
     pthread_cond_signal(&cv_producer);
     pthread_mutex_unlock(&mutex);
+    //Den Char auslesen und den Node freibebn
     temp = node->load;
     free(node);
     node = NULL;
