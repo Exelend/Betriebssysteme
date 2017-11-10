@@ -19,4 +19,4 @@ queue_sema.o: queue_sema.c
 	$(CC) $(CFLAGS) -c queue_sema.c
 
 clean:
-	rn -rf *o pcs
+	rm -rf *o pcs
