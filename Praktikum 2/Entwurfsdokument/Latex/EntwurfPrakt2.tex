@@ -84,9 +84,9 @@
     {\textsc{Hauke Goldhammer (2286057)}}\\[2mm]
     {\textsc{Martin Witte (2285586)}}\\[2mm]
     %\thanks{A thank you or further information}\\ % Your name
-    %\normalsize \href{mailto:marco.torres.810@gmail.com}{marco.torres.810@gmail.com}\\[2mm] % Your email address
+    %\normalsize \href..@gmail.com}{...@.. .com}\\[2mm] % Your email address
 }
-%\date{} % Uncomment to remove date
+\date{Sonntag, 05 November 17} % Uncomment to remove date
 
 %----------------------------------------------------------------------------------------
 \begin{document}
@@ -109,11 +109,11 @@ Zu erstellen ist ein Programm, mit folgenden Anforderungen:\\
 - 'q' oder 'Q' $\rightarrow$ Main-Thread beendet das System\\
 - 'h' $\rightarrow$ hilfe\\
 
-\subsection{Weitere Anforderungen:}
+\section{Weitere Anforderungen und Lösungsansätze:}
 \begin{tabular}{l|l}
 Anforderung & Lösungsansatz \\
 \hline
-Wahl zwischen den 2 Varianten &  args bei Programmstart(s, c), dann arbeitet das Prog \\
+Wahl zwischen den 2 Varianten &  args bei Programmstart(-s,-c), dann arbeitet das Prog \\
   & entweder mit Queue\_ sema oder Queue\_ condi\\
 \hline
 Kein Polling & zum blockieren mutex nutzen \\ 
@@ -126,16 +126,18 @@ FIFU\_ 2 mit Conditional Variables & \\
 \hline
 Makefile erstellen &  \\
 \hline
-Fehlermeldungen gem. POSIX bzw. errno &  \\
+Fehlermeldungen gem. POSIX bzw. errno & Fehler, wenn möglich, im Prog abhandeln, gem. POSIX \\
 \hline
-Beenden von Threads nicht in kritischen Abschnitten & //Zwei Möglichkeiten!! \\
+Beenden von Threads nicht in kritischen Abschnitten & Threads mitteilen, dass sie sich beenden sollen.\\
+  & Dies tun sie dann außerhalb des kritischen Bereiches. \\
 \hline
-Mutexe+Semaphore am Ende wieder an BS zurückgeben & destroy-Funktionen (vorher unlock beachten) \\
+Mutexe + Semaphore am Ende wieder an BS zurückgeben & destroy-Funktionen (vorher unlock beachten) \\
 \hline
 Funktionen möglichst generisch &  \\
 \end{tabular}
 \\
 \\
-\includegraphics[scale=1]{Entwurf v1-0.png}
+\section{Angestrebte Programmstruktur:}
+\includegraphics[width=0.9\textwidth]{Entwurf v1-0.png}
 
 \end{document}
