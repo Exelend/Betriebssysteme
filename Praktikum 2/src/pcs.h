@@ -15,6 +15,15 @@
 #define SECONDS_TO_WAIT_3 3
 #define SECONDS_TO_WAIT_2 2
 
+#define FEHLERBEHANDLUNG(bed, str)\
+    {\
+        if(bed){\
+            perror(str);\
+            exit(1);\
+        }\
+    }
+
+extern bool prodKill;
 extern pthread_mutex_t mutex;
 extern bool consumerKill;
 

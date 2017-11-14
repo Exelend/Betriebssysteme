@@ -44,6 +44,9 @@ int queue_sema_init(){
 int setLoad_sema(char load){
     //Thread blockiert, wenn die Queue leer ist
     sem_wait(&semaphorEmpty);
+    if(prodKill){
+       return EXIT_SUCCESS; 
+    }    
     //Node wird erstellt und gefuellt
     NODE* node = (NODE*) malloc(sizeof(NODE));
     node->load = load;
@@ -86,20 +89,25 @@ char getLoad_sema(){
     pthread_mutex_unlock(&mutex);
     //Den Produzern mitteilen, dass wieder Platz in der Queue ist
     sem_post(&semaphorEmpty);
-    //Den Char auslesen und den Node freibebn
+    //Den Char auslesen und den Node freigeben
     char temp = node->load;
     free(node);
     node = NULL;
     return temp;
 }
 
+int end_queue_sema(void){
+    sem_post(&semaphorEmpty);
+    sem_post(&semaphorEmpty);
+}    
+
 /*
  * Zerstoert die Semaphoren und die Queue.
  */
 void destroy_sema_queue(){
-    pthread_mutex_unlock(&mutex);
-    sem_destroy(&semaphorFull);
-    sem_destroy(&semaphorEmpty);
+    FEHLERBEHANDLUNG(pthread_mutex_unlock(&mutex) < 0, "Queue Mutex konnte nicht ungelockt werden!\n");
+    FEHLERBEHANDLUNG(sem_destroy(&semaphorFull) < 0, "SemaphoreFull konnte nicht freigegeben werden\n");
+    FEHLERBEHANDLUNG(sem_destroy(&semaphorEmpty) < 0, "semaphorEmpty konnte nicht freigegeben werden\n");
     queueDestroy(queue);
     queue = NULL;
 }

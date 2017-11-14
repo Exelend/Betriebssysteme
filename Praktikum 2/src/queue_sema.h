@@ -15,6 +15,7 @@ int queue_sema_init(void);
 int setLoad_sema(char load);
 void destroy_sema_queue(void);
 char getLoad_sema(void);
+int end_queue_sema(void);
 
 
 #endif //QUEUE_SEMA_H_

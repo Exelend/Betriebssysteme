@@ -42,13 +42,18 @@ int queue_condi_init(){
     return EXIT_SUCCESS;
 }
 
+int end_queue_condi(void){
+    queue->size = 0;
+    pthread_cond_signal(&cv_producer);
+}
+
 /*
  * Zerstoert die conditional Variables und die Queue.
  */
 void destroy_condi_queue(){
-    pthread_mutex_unlock(&mutex);
-    pthread_cond_destroy(&cv_consumer);
-    pthread_cond_destroy(&cv_producer);
+	FEHLERBEHANDLUNG(pthread_mutex_unlock(&mutex) < 0, "Queue Mutex konnte nicht ungelockt werden!\n");
+	FEHLERBEHANDLUNG(pthread_cond_destroy(&cv_consumer)<0,"");
+	FEHLERBEHANDLUNG(pthread_cond_destroy(&cv_producer)<0,"");
     queueDestroy(queue);
     queue = NULL;
 }
@@ -66,6 +71,10 @@ int setLoad_condi(char load){
     //Ueberpruefung ob noch Platz in der Queue ist, wenn nicht blockiert der Thread.
     while(queue->size >= BUFFERSIZE){
         pthread_cond_wait(&cv_producer, &mutex);
+        if(prodKill){
+        	pthread_mutex_unlock(&mutex);
+            return EXIT_SUCCESS;
+        }    
     }
     // wenn noch kein NODE  in der Queue ist, ....
     if(queue->head == NULL){
@@ -76,10 +85,11 @@ int setLoad_condi(char load){
         queue->tail = node;
     }
     queue->size++;
-    //Teilt dem Consumer mit, dass ein neues Element vorhanden ist
-    pthread_cond_signal(&cv_consumer);
     //Kritischer Abschnitt Ende
     pthread_mutex_unlock(&mutex);
+    //Teilt dem Consumer mit, dass ein neues Element vorhanden ist
+    pthread_cond_signal(&cv_consumer);
+    
 
     return EXIT_SUCCESS;
 }
@@ -103,9 +113,10 @@ char getLoad_condi(){
     NODE* node = queue->head;
     queue->head = node->next;
     queue->size--;
+    
+    pthread_mutex_unlock(&mutex);
     //Den Produzern mitteilen, dass wieder Platz in der Queue ist
     pthread_cond_signal(&cv_producer);
-    pthread_mutex_unlock(&mutex);
     //Den Char auslesen und den Node freibebn
     temp = node->load;
     free(node);

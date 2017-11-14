@@ -17,12 +17,13 @@
 #include "queue_sema.h"
 
 
+
+
 // true fuer Debug(printf-Asgaben)
 static bool debug = false;
 
 //Variablen zum beenden der Threads
-static bool prod1Kill = false;
-static bool prod2Kill = false;
+bool prodKill = false;
 bool consumerKill = false;
 static bool controlKill = false;
 
@@ -37,6 +38,7 @@ static int (*queue_init)();
 static void (*queueDestroy1)();
 static int (*queueSetLoad)(char);
 static char (*queueGetLoad)();
+static int (*end_queue)();
 
 //
 static int retProducer1, retProducer2, retConsumer, retControl;
@@ -66,7 +68,7 @@ void* producer1(void* unused){
     // Variable zur Erstellung der Buchstaben
     int zaehler = 'a';
     // Solange der Producer1 nicht beendet werden soll,....
-    while(!prod1Kill){
+    while(!prodKill){
         if(debug){
             printf("Producer1 while anfang\n");
         }
@@ -102,7 +104,7 @@ void* producer2(void* unused){
     // Variable zur Erstellung der Buchstaben
     int zaehler = 'A';
     // Solange der Producer2 nicht beendet werden soll,....
-    while(!prod2Kill){
+    while(!prodKill){
         if(debug){
             printf("Producer2 while anfang\n");
         }
@@ -227,14 +229,15 @@ void* control(void* unused){
             //Selbstzerstoerungssequence einleiten ;)
             case 'q':
             case 'Q':
-                // Prod1 soll bendet werden;
-                prod1Kill = true;
+                // Prod1 soll beendet werden;
+                prodKill = true;
                 // Prod1 entsperren;
                 pthread_mutex_unlock(&prod1Mutex);
-                // Prod2 soll bendet werden;
-                prod2Kill = true;
+                end_queue();
                 // Prod2 entsperren;
                 pthread_mutex_unlock(&prod2Mutex);
+                end_queue();
+                
                 // Consumer soll bendet werden;
                 consumerKill = true;
                 // Consumer entsperren;
@@ -265,6 +268,7 @@ void pointerInitSema(){
     queueDestroy1 = &destroy_sema_queue;
     queueSetLoad = &setLoad_sema;
     queueGetLoad = &getLoad_sema;
+    end_queue = &end_queue_sema;
 
 }
 
@@ -276,6 +280,7 @@ void pointerInitCondi(){
     queueDestroy1 = &destroy_condi_queue;
     queueSetLoad = &setLoad_condi;
     queueGetLoad = &getLoad_condi;
+    end_queue = &end_queue_condi;
 }
 
 int main(int argc, char* argv[]){
@@ -316,25 +321,17 @@ int main(int argc, char* argv[]){
     queue_init();
     // Threads starten und pruefen, ob sie gestartet sind.
     int tempReturn = pthread_create( &(threadArray[0]), NULL, &control, NULL);
-    if(tempReturn != 0){
-        printf("Control konnte nicht gestartet werden!\n");
-        return EXIT_FAILURE;
-    }
+    FEHLERBEHANDLUNG(tempReturn, "Control konnte nicht gestartet werden!\n");
+    
     tempReturn = pthread_create( &(threadArray[1]), NULL, &producer1, NULL);
-    if(tempReturn != 0){
-        printf("Producer1 konnte nicht gestartet werden!\n");
-        return EXIT_FAILURE;
-    }
+    FEHLERBEHANDLUNG(tempReturn, "Producer1 konnte nicht gestartet werden!\n");
+    
     tempReturn = pthread_create( &(threadArray[2]), NULL, &producer2, NULL);
-    if(tempReturn != 0){
-        printf("Producer2 konnte nicht gestartet werden!\n");
-        return EXIT_FAILURE;
-    }
+    FEHLERBEHANDLUNG(tempReturn, "Producer2 konnte nicht gestartet werden!\n");
+    
     tempReturn = pthread_create( &(threadArray[3]), NULL, &consumer, NULL);
-    if(tempReturn != 0){
-        printf("Consumer konnte nicht gestartet werden!\n");
-        return EXIT_FAILURE;
-    }
+    FEHLERBEHANDLUNG(tempReturn, "Consumer konnte nicht gestartet werden!\n");
+    
 
     // warten auf Ende der Thraeds;
     for(int i = 0; i < ANZAHL_THREADS; i++){
@@ -343,16 +340,17 @@ int main(int argc, char* argv[]){
 
 
     // Alles zerstoeren, freigeben;
-    pthread_mutex_unlock(&mutex);
+    FEHLERBEHANDLUNG(pthread_mutex_unlock(&mutex) < 0, "Mutex der Queue konnte nicht ungelockt werden!\n");
     queueDestroy1();
-    pthread_mutex_destroy(&mutex);
-    pthread_mutex_unlock(&prod1Mutex);
-    pthread_mutex_destroy(&prod1Mutex);
-    pthread_mutex_unlock(&prod2Mutex);
-    pthread_mutex_destroy(&prod2Mutex);
-    pthread_mutex_unlock(&consumMutex);
-    pthread_mutex_destroy(&consumMutex);
-
+    FEHLERBEHANDLUNG(pthread_mutex_unlock(&mutex) < 0, "x Mutex der Queue konnte nicht ungelockt werden!\n");
+    FEHLERBEHANDLUNG(pthread_mutex_destroy(&mutex) < 0, "Main: Mutex der Queue konnte nicht freigegeben werden!\n");
+    FEHLERBEHANDLUNG(pthread_mutex_unlock(&prod1Mutex) < 0, "Mutex Prod1 konnte nicht ungelockt werden!\n");
+    FEHLERBEHANDLUNG(pthread_mutex_destroy(&prod1Mutex) < 0, "Mutex Prod1 konnte nicht freigegeben werden!\n");
+    FEHLERBEHANDLUNG(pthread_mutex_unlock(&prod2Mutex) < 0, "Mutex Prod2 konnte nicht ungelockt werden!\n");
+    FEHLERBEHANDLUNG(pthread_mutex_destroy(&prod2Mutex) < 0, "Mutex Prod2 konnte nicht freigegeben werden!\n");
+    FEHLERBEHANDLUNG(pthread_mutex_unlock(&consumMutex) < 0, "Mutex Consumer konnte nicht ungelockt werden!\n");
+    FEHLERBEHANDLUNG(pthread_mutex_destroy(&consumMutex) < 0, "Mutex Consumer konnte nicht freigegeben werden!\n");
+ 
     return EXIT_SUCCESS;
 }
 

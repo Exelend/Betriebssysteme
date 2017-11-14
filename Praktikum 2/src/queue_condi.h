@@ -14,6 +14,7 @@ int queue_condi_init(void);
 void destroy_condi_queue(void);
 int setLoad_condi(char load);
 char getLoad_condi(void);
+int end_queue_condi(void);
 
 
 #endif // QUEUE_CONDI_H_

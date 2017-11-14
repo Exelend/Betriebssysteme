@@ -1,6 +1,7 @@
 CC=gcc
 CFLAGS=--std=c99 -pthread
-
+#SRC=main.c
+#%==Wildcard
 all: pcs
 
 pcs: pcs.o queue.o queue_condi.o queue_sema.o
